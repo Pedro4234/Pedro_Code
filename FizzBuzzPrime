@@ -1,0 +1,62 @@
+"""🔹 1. Easy – FizzBuzz with a Twist (5 mins)
+Problem:
+Print the numbers from 1 to 30.
+
+For multiples of 3, print "Fizz" instead of the number.
+
+For multiples of 5, print "Buzz".
+
+For numbers which are multiples of both 3 and 5, print "FizzBuzz".
+
+For prime numbers, print "Prime" instead (even if they are multiples of 3 or 5).
+
+💡 Expected: 1, Prime, Fizz, 4, Buzz, Fizz, Prime, 8, Fizz, Buzz, 11, Fizz, Prime, 14, FizzBuzz, ...
+
+def greet(name):
+    return f"Hello, {name}"
+
+print(greet("Bob"))  # Hello, Bob
+
+if x > 10:
+    print("Greater")
+elif x == 10:
+    print("Equal")
+else:
+    print("Less")
+
+for i in range(5):  # 0 to 4
+    print(i)
+
+for item in [1, 2, 3]:
+    print(item)
+
+x = 0
+while x < 5:
+    print(x)
+    x += 1
+
+
+"""
+import math
+length = int(input("How long will the count be"))
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(math.sqrt(n)) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def fizzbuzz(length):
+    for i in range(1,length+1):
+        if i % 3 == 0 and i % 5 == 0:
+            i = "FizzBuzz"
+        elif i % 5 == 0:
+            i="Buzz"
+        elif i % 3 == 0 :
+            i = "Fizz"
+        elif is_prime(i) == True:
+            i="prime"
+        print(i)
+fizzbuzz(length)
