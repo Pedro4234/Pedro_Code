@@ -1,0 +1,39 @@
+"""🔹 2. Medium – Password Strength Checker (7–8 mins)
+Problem:
+Write a function check_password_strength(pwd) that returns "Weak", "Medium", or "Strong" based on these rules:
+
+Length < 6 → "Weak"
+
+Length ≥ 6 and contains only letters → "Medium"
+
+Length ≥ 6 and contains at least one letter, one number, and one special character → "Strong"
+
+💡 Example:
+
+check_password_strength("abc") → "Weak"  
+check_password_strength("abcdef") → "Medium"  
+check_password_strength("abc123!") → "Strong"""
+
+def check_password_strength(pwd):
+    i=0
+    has_letter = False
+    has_num = False
+    has_sChar = False
+    aChar = pwd[i]
+    for char in pwd:
+        if char.isdigit():
+            has_num = True
+        elif char.isalpha():
+            has_letter = True
+        elif not char.isalnum():
+            has_sChar= True
+    
+    # It's a digit!
+    if len(pwd) < 6:
+        print("Weak")
+    elif has_num== False or has_letter == False or has_sChar == False:
+        print("Medium")
+    else :
+        print("Strong")
+pwd= input("Please input your password to test it's strength: ")
+check_password_strength(pwd)
