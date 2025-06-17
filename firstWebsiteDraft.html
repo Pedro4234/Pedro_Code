@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .stock-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stock-ticker {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stock-rating {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .stock-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .rating-breakdown {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .rating-breakdown h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .rating-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .rating-item:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .error {
+            background: #fff5f5;
+            color: #e53e3e;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #f0fff4;
+            color: #38a169;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #38a169;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .stock-metrics {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Stock Analysis Tool</h1>
+            <p>Powered by Alpha Vantage API with AI-Enhanced Insights</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('single')">Single Stock</button>
+                <button class="tab" onclick="showTab('compare')">Compare Stocks</button>
+                <button class="tab" onclick="showTab('rate')">Rate Stock</button>
+            </div>
+
+            <!-- Single Stock Tab -->
+            <div id="single" class="tab-content active">
+                <div class="input-group">
+                    <label for="singleTicker">Stock Ticker Symbol:</label>
+                    <input type="text" id="singleTicker" placeholder="e.g., AAPL, MSFT, GOOGL" maxlength="10">
+                </div>
+                <button class="btn" onclick="fetchSingleStock()">Analyze Stock</button>
+            </div>
+
+            <!-- Compare Stocks Tab -->
+            <div id="compare" class="tab-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="input-group">
+                        <label for="ticker1">First Stock:</label>
+                        <input type="text" id="ticker1" placeholder="e.g., AAPL" maxlength="10">
+                    </div>
+                    <div class="input-group">
+                        <label for="ticker2">Second Stock:</label>
+                        <input type="text" id="ticker2" placeholder="e.g., MSFT" maxlength="10">
+                    </div>
+                </div>
+                <button class="btn" onclick="compareStocks()">Compare Stocks</button>
+            </div>
+
+            <!-- Rate Stock Tab -->
+            <div id="rate" class="tab-content">
+                <div class="input-group">
+                    <label for="rateTicker">Stock Ticker Symbol:</label>
+                    <input type="text" id="rateTicker" placeholder="e.g., AAPL" maxlength="10">
+                </div>
+                <button class="btn" onclick="rateStock()">Rate Stock</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Fetching stock data...</p>
+            </div>
+
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'QWH7C3KRNZU78TBM';
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Clear results
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showError(message) {
+            document.getElementById('results').innerHTML = `
+                <div class="error">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        function safeFloat(value) {
+            try {
+                return parseFloat(value) || 0;
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        async function fetchStockData(ticker) {
+            const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${API_KEY}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.Note) {
+                    throw new Error('Rate limit exceeded. Please try again later.');
+                }
+
+                if (data['Error Message']) {
+                    throw new Error(data['Error Message']);
+                }
+
+                if (!data.Symbol) {
+                    throw new Error(`No data found for ticker ${ticker}`);
+                }
+
+                return {
+                    symbol: data.Symbol,
+                    name: data.Name,
+                    price: safeFloat(data['50DayMovingAverage']),
+                    eps: safeFloat(data.EPS),
+                    pe_ratio: safeFloat(data.PERatio),
+                    dividend_yield: safeFloat(data.DividendYield),
+                    '52w_high': safeFloat(data['52WeekHigh']),
+                    '52w_low': safeFloat(data['52WeekLow']),
+                    beta: safeFloat(data.Beta),
+                    return_on_assets: safeFloat(data.ReturnOnAssetsTTM),
+                    eps_growth: safeFloat(data.EPS),
+                    market_cap: data.MarketCapitalization,
+                    sector: data.Sector,
+                    industry: data.Industry
+                };
+            } catch (error) {
+                throw new Error(`Failed to fetch data for ${ticker}: ${error.message}`);
+            }
+        }
+
+        function rateStockData(stockInfo) {
+            let score = 0;
+            const ratingDetails = {};
+            
+            // 1. Proximity to 52W Low (4 points)
+            if (stockInfo['52w_low'] > 0 && stockInfo.price > 0) {
+                const percentAboveLow = ((stockInfo.price - stockInfo['52w_low']) / stockInfo['52w_low']) * 100;
+                
+                let proximityPoints = 0;
+                if (percentAboveLow <= 15) proximityPoints = 4;
+                else if (percentAboveLow <= 20) proximityPoints = 3;
+                else if (percentAboveLow <= 30) proximityPoints = 2;
+                else if (percentAboveLow <= 40) proximityPoints = 1;
+                
+                score += proximityPoints;
+                ratingDetails['Proximity to 52W Low'] = `${proximityPoints}/4`;
+            } else {
+                ratingDetails['Proximity to 52W Low'] = '0/4';
+            }
+
+            // 2. EPS Growth (5 points)
+            let epsGrowthPoints = 1;
+            if (stockInfo.eps_growth > 4) epsGrowthPoints = 5;
+            else if (stockInfo.eps_growth > 3) epsGrowthPoints = 4;
+            else if (stockInfo.eps_growth > 2) epsGrowthPoints = 3;
+            else if (stockInfo.eps_growth > 1) epsGrowthPoints = 2;
+            
+            score += epsGrowthPoints;
+            ratingDetails['EPS Growth'] = `${epsGrowthPoints}/5`;
+
+            // 3. PE Ratio (5 points)
+            let pePoints = 0;
+            if (stockInfo.pe_ratio <= 0) pePoints = 0;
+            else if (stockInfo.pe_ratio <= 10) pePoints = 5;
+            else if (stockInfo.pe_ratio <= 15) pePoints = 4;
+            else if (stockInfo.pe_ratio <= 20) pePoints = 3;
+            else if (stockInfo.pe_ratio <= 25) pePoints = 2;
+            else if (stockInfo.pe_ratio <= 30) pePoints = 1;
+            
+            score += pePoints;
+            ratingDetails['PE Ratio'] = `${pePoints}/5`;
+
+            // 4. Dividend Yield (3 points)
+            let dividendPoints = 0;
+            if (stockInfo.dividend_yield > 2) dividendPoints = 3;
+            else if (stockInfo.dividend_yield > 1) dividendPoints = 2;
+            else if (stockInfo.dividend_yield > 0) dividendPoints = 1;
+            
+            score += dividendPoints;
+            ratingDetails['Dividend Yield'] = `${dividendPoints}/3`;
+
+            // 5. Return on Assets (3 points)
+            let roaPoints = 0;
+            if (stockInfo.return_on_assets > 20) roaPoints = 3;
+            else if (stockInfo.return_on_assets > 10) roaPoints = 2;
+            else if (stockInfo.return_on_assets > 5) roaPoints = 1;
+            
+            score += roaPoints;
+            ratingDetails['Return on Assets'] = `${roaPoints}/3`;
+
+            // 6. Beta (3 points)
+            let betaPoints = 1;
+            if (stockInfo.beta < 1.25) betaPoints = 3;
+            else if (stockInfo.beta < 1.75) betaPoints = 2;
+            
+            score += betaPoints;
+            ratingDetails['Beta'] = `${betaPoints}/3`;
+
+            return { score, ratingDetails };
+        }
+
+        function displayStockCard(stockInfo, rating = null) {
+            const ratingHtml = rating ? `<div class="stock-rating">${rating.score}/20</div>` : '';
+            
+            return `
+                <div class="stock-card">
+                    <div class="stock-header">
+                        <div>
+                            <div class="stock-ticker">${stockInfo.symbol}</div>
+                            <div style="color: #666; font-size: 0.9rem;">${stockInfo.name || 'N/A'}</div>
+                            <div style="color: #666; font-size: 0.8rem;">${stockInfo.sector || 'N/A'} • ${stockInfo.industry || 'N/A'}</div>
+                        </div>
+                        ${ratingHtml}
+                    </div>
+                    
+                    <div class="stock-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Price (50-day MA)</div>
+                            <div class="metric-value">$${stockInfo.price.toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">EPS</div>
+                            <div class="metric-value">${stockInfo.eps.toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">P/E Ratio</div>
+                            <div class="metric-value">${stockInfo.pe_ratio.toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Dividend Yield</div>
+                            <div class="metric-value">${stockInfo.dividend_yield.toFixed(2)}%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">52W High</div>
+                            <div class="metric-value">$${stockInfo['52w_high'].toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">52W Low</div>
+                            <div class="metric-value">$${stockInfo['52w_low'].toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Beta</div>
+                            <div class="metric-value">${stockInfo.beta.toFixed(2)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">ROA</div>
+                            <div class="metric-value">${stockInfo.return_on_assets.toFixed(2)}%</div>
+                        </div>
+                    </div>
+                    
+                    ${rating ? `
+                        <div class="rating-breakdown">
+                            <h4>Rating Breakdown:</h4>
+                            ${Object.entries(rating.ratingDetails).map(([key, value]) => `
+                                <div class="rating-item">
+                                    <span>${key}</span>
+                                    <span>${value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        async function fetchSingleStock() {
+            const ticker = document.getElementById('singleTicker').value.trim().toUpperCase();
+            if (!ticker) {
+                showError('Please enter a stock ticker symbol');
+                return;
+            }
+
+            showLoading();
+            try {
+                const stockData = await fetchStockData(ticker);
+                hideLoading();
+                
+                document.getElementById('results').innerHTML = displayStockCard(stockData);
+            } catch (error) {
+                hideLoading();
+                showError(error.message);
+            }
+        }
+
+        async function compareStocks() {
+            const ticker1 = document.getElementById('ticker1').value.trim().toUpperCase();
+            const ticker2 = document.getElementById('ticker2').value.trim().toUpperCase();
+            
+            if (!ticker1 || !ticker2) {
+                showError('Please enter both stock ticker symbols');
+                return;
+            }
+
+            showLoading();
+            try {
+                const [stock1, stock2] = await Promise.all([
+                    fetchStockData(ticker1),
+                    fetchStockData(ticker2)
+                ]);
+                
+                const rating1 = rateStockData(stock1);
+                const rating2 = rateStockData(stock2);
+                
+                hideLoading();
+                
+                document.getElementById('results').innerHTML = `
+                    <h3>Stock Comparison</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        ${displayStockCard(stock1, rating1)}
+                        ${displayStockCard(stock2, rating2)}
+                    </div>
+                    
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>${ticker1}</th>
+                                <th>${ticker2}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Price (50-day MA)</td><td>$${stock1.price.toFixed(2)}</td><td>$${stock2.price.toFixed(2)}</td></tr>
+                            <tr><td>EPS</td><td>${stock1.eps.toFixed(2)}</td><td>${stock2.eps.toFixed(2)}</td></tr>
+                            <tr><td>P/E Ratio</td><td>${stock1.pe_ratio.toFixed(2)}</td><td>${stock2.pe_ratio.toFixed(2)}</td></tr>
+                            <tr><td>Dividend Yield (%)</td><td>${stock1.dividend_yield.toFixed(2)}</td><td>${stock2.dividend_yield.toFixed(2)}</td></tr>
+                            <tr><td>52W High</td><td>$${stock1['52w_high'].toFixed(2)}</td><td>$${stock2['52w_high'].toFixed(2)}</td></tr>
+                            <tr><td>52W Low</td><td>$${stock1['52w_low'].toFixed(2)}</td><td>$${stock2['52w_low'].toFixed(2)}</td></tr>
+                            <tr><td>Beta</td><td>${stock1.beta.toFixed(2)}</td><td>${stock2.beta.toFixed(2)}</td></tr>
+                            <tr><td>ROA (%)</td><td>${stock1.return_on_assets.toFixed(2)}</td><td>${stock2.return_on_assets.toFixed(2)}</td></tr>
+                            <tr><td><strong>Overall Rating</strong></td><td><strong>${rating1.score}/20</strong></td><td><strong>${rating2.score}/20</strong></td></tr>
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                hideLoading();
+                showError(error.message);
+            }
+        }
+
+        async function rateStock() {
+            const ticker = document.getElementById('rateTicker').value.trim().toUpperCase();
+            if (!ticker) {
+                showError('Please enter a stock ticker symbol');
+                return;
+            }
+
+            showLoading();
+            try {
+                const stockData = await fetchStockData(ticker);
+                const rating = rateStockData(stockData);
+                hideLoading();
+                
+                document.getElementById('results').innerHTML = displayStockCard(stockData, rating);
+            } catch (error) {
+                hideLoading();
+                showError(error.message);
+            }
+        }
+
+        // Add enter key support
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('singleTicker').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') fetchSingleStock();
+            });
+            
+            document.getElementById('ticker1').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') compareStocks();
+            });
+            
+            document.getElementById('ticker2').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') compareStocks();
+            });
+            
+            document.getElementById('rateTicker').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') rateStock();
+            });
+        });
+    </script>
+</body>
+</html>
